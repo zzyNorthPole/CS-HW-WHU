@@ -90,7 +90,7 @@ void start()
 
 /* 
   expr(op1) -> expr(op2) expr1(op1)
-  expr1(op1) -> op2 expr(op2) expr1(op1)
+  expr1(op1) -> op1 expr(op2) expr1(op1)
              | epsilon 
   where op1 = |, op2 = -;
         op1 = -, op2 = ^;
@@ -105,11 +105,9 @@ AST_PTR expr(Kind op)
   case Or: left = expr(Diff);
       return expr1(Or, left);
   case Diff: left = expr(Alt);
-      return expr1(Diff, left);
-    
+      return expr1(Diff, left);  
   case Alt: left = expr(And);
       return expr1(Alt, left);
-    
   default:  left = term();
       return expr1(And, left);
   }
@@ -119,15 +117,16 @@ AST_PTR expr1(Kind op, AST_PTR left)
 {
   AST_PTR right, tmp;
   char op_ch;
+  Kind op2;
   switch (op) {
-  case Or: op_ch = '|'; break;
-  case Diff: op_ch = '-'; break;
-  case Alt: op_ch = '^'; break;
-  default: op_ch = '&'; 
+  case Or: op_ch = '|'; op2 = Diff; break;
+  case Diff: op_ch = '-'; op2 = Alt; break;
+  case Alt: op_ch = '^'; op2 = And; break;
+  default: op_ch = '&'; op2 = Seq; 
   }  
   if (*current == op_ch ) {
     next_token ();
-    right = expr(op);
+    right = expr(op2);
     /* tmp = mkOpNode(op, left, right); */
     tmp = arrangeOpNode(op, left, right);
     return expr1(op, tmp);

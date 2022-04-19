@@ -1,7 +1,7 @@
 
 /************************************************************/
 /*      copyright hanfei.wang@gmail.com                     */
-/*             2019.09.10                                   */
+/*             2021.09.10                                   */
 /************************************************************/
 
 #include "ast.h"
@@ -125,6 +125,9 @@ AST_PTR mkEmpty (void)
   return insert(tree_tmp);
 }
 
+/* r1|r2|r3 = (r1|r2)|r3 where hv(r1)<=hv(r2)<=hv(r3) */
+
+/* Or, Diff, Alt, And, Seq */
 
 
 AST_PTR mkOpNode(Kind op, AST_PTR tree1, AST_PTR tree2)
@@ -164,6 +167,11 @@ AST_PTR mkOpNode(Kind op, AST_PTR tree1, AST_PTR tree2)
   if (tree1 == tree2){
     if (op == Or || op == And) return tree1;
     if (op == Diff) return mkEmpty();
+  }
+
+  if (op == Or) {
+    if (tree1->op == Epsilon && tree2->nullable) return tree2;
+    if (tree2->op == Epsilon && tree1->nullable) return tree1;
   }
   
   if (op == Or) 
@@ -206,21 +214,18 @@ AST_PTR mkOpNode(Kind op, AST_PTR tree1, AST_PTR tree2)
 
 AST_PTR insert_op_node(Kind op, AST_PTR tree1, AST_PTR tree2)
 {
-  
   AST_PTR e1 = tree1->lchild, e2 = tree1->rchild;
-  /* (e1 || e2) || e1 = (e1 || e2) || e2 = e1 || e2 */ 
-
+ 
   if (tree1->op != op) {
-    /* if (tree1->hash == tree2->hash) { */
-    /*   printf("hash equal\n"); */
-    /* } */
     if (tree1->hash <= tree2->hash)
       return mkOpNode(op, tree1, tree2);
     else 
       return mkOpNode(op, tree2, tree1);
   }
   
-
+  if ((op == And || op == Or ) && (e1 == tree2 || e2 == tree2))
+    return tree1;
+  
   if (e2->hash <= tree2->hash) 
     return mkOpNode(op, tree1, tree2);
 
@@ -231,17 +236,34 @@ AST_PTR insert_op_node(Kind op, AST_PTR tree1, AST_PTR tree2)
   }
 
   return mkOpNode(op, insert_op_node(op, e1, tree2), e2); 
- 
-}
+ }
 
 
+
+AST_PTR left_distributive(AST_PTR C, AST_PTR R);
+/* right distributive law:
+   (A | B) C = AC  | BC 
+*/
 
 AST_PTR arrangeSeqNode(AST_PTR L, AST_PTR C)
 {
-  /* TODO */
+  AST_PTR A, B;
+  if (L->op != Or) return left_distributive(L, C);
+  A = L->lchild;
+  B = L->rchild;
+  return arrangeOpNode(Or, arrangeSeqNode(A, C), left_distributive(B, C));
 }
 
 
+AST_PTR left_distributive(AST_PTR C, AST_PTR R)
+{
+  AST_PTR A, B;
+  if (R->op != Or) 
+    return mkOpNode(Seq, C, R);
+  A = R->lchild;
+  B = R->rchild;
+  return arrangeOpNode(Or, left_distributive(C, A), mkOpNode(Seq, C, B));
+}
 
 
 AST_PTR mkStarNode(AST_PTR tree)
@@ -283,7 +305,36 @@ AST_PTR mkStarNode(AST_PTR tree)
 
 AST_PTR arrangeOpNode(Kind op, AST_PTR tree1, AST_PTR tree2)
 {
-  /* TODO */
+  if (op == Seq || op == Alt) {
+    if (tree1->op == Epsilon) return tree2;
+    if (tree1->op == Empty) return tree1;
+    if (tree2->op == Epsilon) return tree1;
+    if (tree2->op == Empty) return tree2;
+  }
+  
+  if (op == And) {
+    if (tree1->op == Epsilon) return tree1;
+    if (tree1->op == Empty) return tree1;
+    if (tree2->op == Epsilon) return tree2;
+    if (tree2->op == Empty) return tree2;
+  }
+  if (op == Diff) {
+    if (tree1->op == Empty) return tree1;
+    if (tree2->op == Empty) return tree1;
+  }
+
+  if (tree1 == tree2){
+    if (op == Or || op == And) return tree1;
+    if (op == Diff) return mkEmpty();
+  }
+
+  if (op == Diff) return mkOpNode(op, tree1, tree2);
+
+  if (op == Seq) return arrangeSeqNode(tree1, tree2);
+  
+  if (tree2->op != op) 
+    return insert_op_node(op, tree1, tree2);
+  return arrangeOpNode(op, arrangeOpNode(op, tree1, tree2->lchild), tree2->rchild);
 }
 
 static FILE *gv_file;
