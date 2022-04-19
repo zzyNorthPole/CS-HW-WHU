@@ -1,0 +1,15 @@
+digraph  G {label ="ac|bc";
+node_2[label="a"]
+node_3[label="c"]
+node_1[label=".", shape=circle]
+node_1  -> node_2[dir=none];
+node_1  -> node_3[dir=none];
+node_5[label="b"]
+node_6[label="c"]
+node_4[label=".", shape=circle]
+node_4  -> node_5[dir=none];
+node_4  -> node_6[dir=none];
+node_0[label="|", shape=circle]
+node_0  -> node_1[dir=none];
+node_0  -> node_4[dir=none];
+}
