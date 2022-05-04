@@ -276,6 +276,32 @@ void print_error(Type_ptr ty1, Type_ptr ty2)
 int unify(Type_ptr t1, Type_ptr t2)
 {
    /* todo */
+    t1 = simply(t1);
+    t2 = simply(t2);
+    if (t1 == NULL || t2 == NULL) {
+      printf("null type occur! typing error!\n");
+      return 0;
+    }
+    switch (t1->kind) {
+      case Int: {
+        int index1 = (t1->index);
+        int index2 = (t2->index);
+
+        if (index1 == index2) return 1;
+        else return 0;
+      }
+
+      case Typevar: {
+        unify_leaf(t1, t2);
+        break;
+      }
+
+      case Arrow: {
+        unify_leaf_arrow(t1, t2);
+        break;
+      }
+    }
+    return 1;
 }
 
 /* print type with index as type variable */
@@ -339,6 +365,77 @@ int is_debug = 0;
 Type_ptr typing (Var_list_ptr abs, AST *t, int top)
 {
   /* todo */
+  Type_ptr tmp;
+
+  if (t == NULL) return NULL;
+
+  switch (t->kind) {
+    case CONST:
+      return make_inttype();
+    
+    case VAR: {
+      tmp = get_n_th(abs, t->value, top);
+      break;
+    }
+
+    case ABS: {
+      AST *t1 = t->rchild;
+      Type_ptr x_type = make_vartype();
+      Var_list_ptr abs1 = add_var_list(x_type, list_copy(abs));
+      Type_ptr tmp1 = typing(abs1, t1, top + 1);
+      if (tmp1) {
+        tmp = make_arrowtype(x_type, tmp1);
+      }
+      else {
+        tmp = NULL;
+      }
+      break;
+    }
+
+    case COND: {
+      AST *t1 = t->lchild;
+      AST *t2 = t->rchild->lchild;
+      AST *t3 = t->rchild->rchild;
+      Var_list_ptr abs1 = list_copy(abs);
+      Type_ptr tmp1 = typing(abs1, t1, top);
+      Var_list_ptr abs2 = list_copy(abs);
+      Type_ptr tmp2 = typing(abs2, t2, top);
+      Var_list_ptr abs3 = list_copy(abs);
+      Type_ptr tmp3 = typing(abs3, t3, top);
+      if (tmp1->kind == Int && unify(tmp2, tmp3)) tmp = tmp2;
+      else tmp = NULL;
+      break;
+    }
+
+    case APP: {
+      AST *t1 = t->lchild;
+      AST *t2 = t->rchild;
+      Var_list_ptr abs1 = list_copy(abs);
+      Type_ptr tmp1 = typing(abs1, t1, top);
+      Var_list_ptr abs2 = list_copy(abs);
+      Type_ptr tmp2 = typing(abs2, t2, top);
+      tmp1 = get_instance(tmp1);
+      if (is_occur_node(tmp1->left->index, tmp2)) {
+        tmp = NULL;       
+        print_error(tmp1->left, tmp2); 
+      }
+      else {
+        unify(tmp1->left, tmp2);
+        tmp = tmp1->right;
+      }
+      break;
+    }
+  }
+
+  if (yyin == stdin) {
+    printf("typing step %d and top = %d:\n", ++step, top);
+    print_abs(abs);
+    print_env();
+    print_expression(t, stdout);
+    printf(" |== "); print_type_debug(tmp); printf("\n");
+  }
+  free_list(abs);
+  return tmp;
 }
 
 /* to change the index to letter */
