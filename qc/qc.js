@@ -1,3 +1,5 @@
+//Programming Quantum Computers
+//https://oreilly-qc.github.io
 qc.reset(2 + 2 + 4 + 4 + 1 + 1);
 
 var a = qint.new(2, "a");
