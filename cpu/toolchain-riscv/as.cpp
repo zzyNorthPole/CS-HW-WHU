@@ -184,7 +184,7 @@ void as(char *opcode) {
         else if (And) func3 = and_op;
         ins = r_op | rd_op(rd) | func3_op(func3) | rs1_op(rs1) | rs2_op(rs2) | func7_op(func7);
     }
-    printf("%x\n", ins);
+    printf("%08x\n", ins);
 }
 
 int main() {
