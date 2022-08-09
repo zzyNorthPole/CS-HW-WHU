@@ -29,9 +29,9 @@ namespace FFT {
 			for (int i = 0; i < n; i += (1 << step)) {
 				ll w = 1;
 				for (int j = 0; j < (1 << (step - 1)); ++j) {
-					ll tmpx = A[i + j], tmpy = w * A[i + j + (1 << (step - 1))] % MOD;
-					A[i + j] = (tmpx + tmpy) % MOD;
-					A[i + j + (1 << (step - 1))] = (tmpx - tmpy + MOD) % MOD;
+					ll tmpx = A[i | j], tmpy = w * A[i | j | (1 << (step - 1))] % MOD;
+					A[i | j] = (tmpx + tmpy) % MOD;
+					A[i | j | (1 << (step - 1))] = (tmpx - tmpy + MOD) % MOD;
 					w = w * wn % MOD;
 				}
 			}
