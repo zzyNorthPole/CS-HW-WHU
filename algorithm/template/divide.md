@@ -20,7 +20,7 @@
 
 最后确定 $mid$ 取法。
 
-考虑到 $r - l == 1$ 时， $l$ 的修改是向上增一， $r$ 的修改是维持不变，我们应该选用向下取整的 $mid$ 选择方法，即 $mid = (l + r) >> 1$ 。
+考虑到 $r - l == 1$ 时， $l$ 的修改是向上增一， $r$ 的修改是维持不变，我们应该选用向下取整的 $mid$ 选择方法，即 $mid = (l + r) >> 1$ 
 
 ```C
 int erfenl(vector <int> a, int x) {
@@ -51,7 +51,7 @@ int erfenl(vector <int> a, int x) {
 
 最后确定 $mid$ 取法。
 
-考虑到 $r - l == 1$ 时， $l$ 的修改是维持不变， $r$ 的修改是向下减一，我们应该采用向上取整的 $mid$ 选择方法，即 $mid = (l + r + 1) >> 1$ 。
+考虑到 $r - l == 1$ 时， $l$ 的修改是维持不变， $r$ 的修改是向下减一，我们应该采用向上取整的 $mid$ 选择方法，即 $mid = (l + r + 1) >> 1$ 
 
 ```C
 int erfenr(vector <int> a, int x) {
@@ -62,5 +62,35 @@ int erfenr(vector <int> a, int x) {
 		else r = mid - 1;
 	}
 	return r;
+}
+```
+
+## 二分答案
+
+```C
+int erfen(int l, int r) {
+	int mid, ans = 0;
+	while (l <= r) {
+		mid = (l + r) >> 1;
+		if (judge(mid)) ans = mid, l = mid + 1;
+		else r = mid - 1;
+	}
+	return ans;
+}
+```
+
+## 实数域上二分
+
+在实数域上二分， $r - l$ 的差值一般取精度 $-2$ 。
+
+```C
+double erfen(double l, double r) {
+	double mid;
+	while (r - l > 1e-8) {
+		mid = (l + r) / 2.0;
+		if (judge(mid)) l = mid;
+		else r = mid;
+	}
+	return l;
 }
 ```
