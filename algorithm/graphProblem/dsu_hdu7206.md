@@ -1,4 +1,4 @@
-# disjointSet_hdu7206
+# dsu_hdu7206
 
 ## 题目大意
 
