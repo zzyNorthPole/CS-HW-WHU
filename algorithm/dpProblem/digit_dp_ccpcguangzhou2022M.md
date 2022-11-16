@@ -2,11 +2,11 @@
 
 ## 题目大意
 
-$$0 \leq a_i \leq m$$
+$0 \leq a_i \leq m$
 
-$$\sum_{i = 1}^k \sum_{j = 1}^{i - 1}a_i \oplus a_j$$
+$\sum_{i = 1}^k \sum_{j = 1}^{i - 1}a_i \oplus a_j$
 
-$$1 \leq k \leq 18, 0 \leq n \leq 10^{15}, 1 \leq m \leq 10^{12}$$
+$1 \leq k \leq 18, 0 \leq n \leq 10^{15}, 1 \leq m \leq 10^{12}$
 
 统计 $\{a_i\}$ 的组数。
 
