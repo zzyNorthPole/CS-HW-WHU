@@ -4,7 +4,7 @@
 
 $0 \leq a_i \leq m$
 
-$\sum_{i = 1}^k \sum_{j = 1}^{i - 1}a_i \oplus a_j$
+$\sum _{i = 1}^k \sum _{j = 1}^{i - 1}a_i \oplus a_j$
 
 $1 \leq k \leq 18, 0 \leq n \leq 10^{15}, 1 \leq m \leq 10^{12}$
 
