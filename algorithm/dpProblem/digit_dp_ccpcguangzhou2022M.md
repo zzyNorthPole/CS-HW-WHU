@@ -1,4 +1,4 @@
-# greedy_dp_nowcodermulti4A
+# digit_dp_ccpcguangzhou2022M
 
 ## 题目大意
 
